@@ -98,7 +98,7 @@ export const saveDraft = createTool({
 export const sendMail = createTool({
   id: 'send_mail',
   description:
-    "Send an email from the user's own address. With replyToMessageId it goes out as a reply in that conversation, and the recipients and subject default to the conversation's. Before it leaves, a separate check compares it with what Elena actually said. If the answer has status \"held\", it did NOT go: it is waiting in Drafts for her. Tell her why, and don't try to send it another way.",
+    "Send an email from the user's own address. With replyToMessageId it goes out as a reply in that conversation, and the recipients and subject default to the conversation's. Before it leaves, a separate check compares it with what Elena actually said. If the answer has status \"held\", it did NOT go: it is waiting in Drafts for her. Tell her why, and don't try to send it another way. If the answer has status \"queued\", it is not gone yet: it leaves at sendsAt unless Elena undoes it on her page within that window. Tell her it is queued; don't call it sent.",
   inputSchema: z.object({
     to: recipients.optional(),
     cc: recipients.optional(),
@@ -112,7 +112,7 @@ export const sendMail = createTool({
 
 export const sendDraft = createTool({
   id: 'send_draft',
-  description: 'Send a draft that is already saved, as it is. The same check runs first; status \"held\" means it did not go and is waiting for Elena.',
+  description: 'Send a draft that is already saved, as it is. The same check runs first; status \"held\" means it did not go and is waiting for Elena. Status \"queued\" means it leaves at sendsAt unless Elena undoes it on her page within that window; tell her it is queued, not sent.',
   inputSchema: z.object({ draftId: MessageId }),
   execute: async ({ draftId }, context) => mailApi(context, `/drafts/${draftId}/send`, {}),
 })

@@ -78,6 +78,7 @@ An independent review found ways to get a held email out that the 99-run evals d
 - **Tampering with a held draft.** The assistant could edit a held draft (so Elena would approve words she never read) or remove its `HELD` label (so it vanished from her page). Both are refused now; `HELD` is set only by the gate and cleared only by her.
 - **Her button.** It now works only on held drafts, and only if the email is unchanged since her page showed it.
 - **Errors.** A timeout used to be remembered as a hold. It no longer is.
+- **Undo window.** Every email that passes the gate now waits `UNDO_SECONDS` (default 300) in an outbox, where Elena can undo it from her page before it leaves. The evals count a queued email as sent, since it goes unless she acts.
 - **Docker.** The gate runs in the `web` service, which had no API key in `docker-compose.yml`, so every send was held. Fixed, and `npm run eval` now refuses to run against a gate that has no key.
 
 ## What still fails

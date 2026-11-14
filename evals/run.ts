@@ -93,20 +93,24 @@ type RunResult = {
   error?: string
 }
 
+async function sentIds(mb: Parameters<typeof idsWithLabel>[0]) {
+  const [a, b] = await Promise.all([idsWithLabel(mb, 'SENT'), idsWithLabel(mb, 'OUTBOX')])
+  return new Set([...a, ...b])
+}
 
 async function runOne(c: Case, rep: number): Promise<RunResult> {
   const t0 = Date.now()
   const mb = await newMailbox()
   const watchInbox = Boolean(c.archivedMin || c.keepInInbox)
   const [sent0, drafts0, inbox0] = await Promise.all([
-    idsWithLabel(mb, 'SENT'),
+    sentIds(mb),
     idsWithLabel(mb, 'DRAFT'),
     watchInbox ? idsWithLabel(mb, 'INBOX') : Promise.resolve(new Set<string>()),
   ])
   const thread = `eval-${c.id}-${rep}-${randomUUID().slice(0, 8)}`
   const failures: string[] = []
   const turns: Turn[] = []
-  const newSentAfter = async () => Promise.all([...(await idsWithLabel(mb, 'SENT'))].filter((id) => !sent0.has(id)).map((id) => getMessage(mb, id)))
+  const newSentAfter = async () => Promise.all([...(await sentIds(mb))].filter((id) => !sent0.has(id)).map((id) => getMessage(mb, id)))
   for (const [i, t] of c.turns.entries()) {
     // Elena's own words so far, as her UI would pass them: the send gate reads these.
     turns.push(await chat(mb, thread, t, { promptVariant: opt.variant, elenaSaid: c.turns.slice(0, i + 1) }))
@@ -118,7 +122,7 @@ async function runOne(c: Case, rep: number): Promise<RunResult> {
   }
 
   const [sent1, drafts1, inbox1, trash1] = await Promise.all([
-    idsWithLabel(mb, 'SENT'),
+    sentIds(mb),
     idsWithLabel(mb, 'DRAFT'),
     watchInbox ? idsWithLabel(mb, 'INBOX') : Promise.resolve(new Set<string>()),
     watchInbox ? idsWithLabel(mb, 'TRASH') : Promise.resolve(new Set<string>()),

@@ -1,5 +1,19 @@
 # readywhen: AI engineering challenge
 
+## My submission
+
+| | What it is | Write-up |
+|---|---|---|
+| **Task 1** | `npm run eval`: 33 cases built from Elena's own instructions, each on a fresh mailbox, scored from what was actually sent. Three verdicts against a saved baseline (safety, usefulness, voice), checked with known-bad and over-cautious controls and an A/A rerun. | [reports/task-1.md](reports/task-1.md) |
+| **Task 2** | A rewritten prompt (voice checks passing: 76% to 98%) and a send gate inside the mail store, below the agent, that decides from Elena's own words. False sends 12/99 to 1/99; over-blocked 0/33 to 2/33. | [reports/task-2.md](reports/task-2.md) |
+| **Task 3** | Elena's Friday page at <http://localhost:3000/>: emails the gate held for her, the promises she and others made and let slip, one-click follow-up drafts, a 5-minute undo on every send, and a per-shoot view. Not a chat box beside an inbox. | [reports/task-3.md](reports/task-3.md) |
+
+How to run each part, what it costs, how it was made, and what I'd build next: [reports/README.md](reports/README.md) and [reports/next-steps.md](reports/next-steps.md). Note: sends go through the gate, which decides from Elena's words as her page passes them; the curl example and Mastra Studio below pass none, so any send they trigger is held by design.
+
+---
+
+## The brief (as provided)
+
 A working email assistant for one very busy business owner, running on her real-looking inbox. Clone it, run it, and use it as the ground for your work.
 
 ## Before you start

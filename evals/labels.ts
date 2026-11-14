@@ -56,6 +56,22 @@ const partQ = questions
   .map((q) => `<section class="card" data-id="${q.id}"><div class="ask">${esc(q.text)}</div><div class="btns">${q.options.map((o) => `<button data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div></section>`)
   .join('\n')
 
+// Part C: is the promise ledger (data/promises.json, Task 3) right? 15
+// promises the page shows on Friday, spread evenly, each with its source.
+let partC = ''
+try {
+  const ledger = JSON.parse(readFileSync('data/promises.json', 'utf8')).promises as any[]
+  const shown = ledger.filter((x) => x.status === 'open' && (!x.due ? x.date >= '2026-09-08' : x.due >= '2026-09-04'))
+  const step = Math.max(1, Math.floor(shown.length / 15))
+  const pick = shown.filter((_, i) => i % step === 0).slice(0, 15)
+  writeFileSync('evals/labels/promise-sample.json', JSON.stringify(pick.map((x, i) => ({ key: `C:${i}`, ...x })), null, 1))
+  partC = pick
+    .map((x, i) => `<section class="card" data-id="C:${i}"><div class="meta">${x.messageId} · ${x.side} · due ${x.due ?? 'no date'}</div>
+  <div class="ask">${esc(x.who)} → ${esc(x.toWhom)}: ${esc(x.what)}</div><div class="note">“${esc(x.quote)}”</div>${quote(x.messageId)}
+  <div class="btns">The page shows this as an open promise. <button data-v="right">right</button><button data-v="not a promise">not a promise</button><button data-v="already done">already done</button><button data-v="wrong details">wrong who/what/date</button></div></section>`)
+    .join('\n')
+} catch {}
+
 const partB = sample
   .map(
     (r: any, i: number) => `<section class="card" data-id="B:${r.case}:${r.rep}:${i}">
@@ -89,6 +105,7 @@ ${partQ}
 ${sample.length ? `<h2>Part B: does it sound right? (${sample.length} replies)</h2>` : ''}
 ${sample.length ? '' : '<!--'}<p class="note">Judge the chat reply only, against docs/voice.md: leads with the answer, short and plain, names who said what, asks at most one thing, no fluff. Gut feel is fine.</p>${sample.length ? '' : '-->'}
 ${partB}
+${partC ? `<h2>Part C: is the promise list right? (15)</h2><p class="note">From the Task 3 page. Judge from the quoted message (and your sense of the inbox).</p>${partC}` : ''}
 <textarea id="out" hidden></textarea>
 <script>
 const KEY='eval-labels-v1';let s={};try{s=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}

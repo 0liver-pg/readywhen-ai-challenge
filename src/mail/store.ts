@@ -27,6 +27,8 @@ import {
 } from './contract'
 import { decide, type GateDecision, type Recipient, type Said } from './gate'
 
+export const UNDO_SECONDS = Number(process.env.UNDO_SECONDS ?? 300)
+
 export class NotFound extends Error {}
 export class Invalid extends Error {}
 
@@ -148,6 +150,7 @@ export async function getMailbox(id: MailboxId): Promise<Mailbox> {
 
 export async function search(id: MailboxId, q: SearchQuery): Promise<{ messages: MessageSummary[]; nextPageToken: string | null }> {
   await getMailbox(id)
+  await releaseDue(id)
   const like = (s: string) => `%${s.replace(/[\\%_]/g, '\\$&')}%`
   const where = [sql`mailbox_id = ${id}`]
   if (q.text) where.push(sql`(subject ilike ${like(q.text)} or body ilike ${like(q.text)} or sender::text ilike ${like(q.text)})`)
@@ -183,6 +186,7 @@ export async function getMessage(id: MailboxId, messageId: MessageId): Promise<M
 }
 
 export async function getThread(id: MailboxId, threadId: ThreadId): Promise<Message[]> {
+  await releaseDue(id)
   const rows = await sql<Row[]>`
     select * from mail.message where mailbox_id = ${id} and thread_id = ${threadId} order by sent_at, id`
   if (rows.length === 0) throw new NotFound(`no thread ${threadId}`)
@@ -202,7 +206,7 @@ export async function getAttachment(id: MailboxId, messageId: MessageId, attachm
 // UI or the eval) in a header the model never touches.
 export type SendContext = { elenaSaid?: string[] }
 export type Held = { status: 'held'; draftId: MessageId; reason: string; evidence: string[] }
-export type SendResult = (Message & { status: 'sent' }) | Held
+export type SendResult = (Message & { status: 'sent' | 'queued'; sendsAt?: string }) | Held
 
 export async function send(id: MailboxId, compose: Compose, ctx: SendContext = {}): Promise<SendResult> {
   const draft = await insertAuthored(id, compose, 'DRAFT')
@@ -243,7 +247,38 @@ export async function sendDraft(id: MailboxId, draftId: MessageId, ctx: SendCont
   }
   // Only the exact email the gate checked may leave: if the draft was edited
   // while the check ran, nothing is sent.
-  return { ...(await markSent(id, draft)), status: 'sent' }
+  const m = await markSent(id, draft)
+  return m.labels.includes('OUTBOX' as Label) ? { ...m, status: 'queued', sendsAt: m.date } : { ...m, status: 'sent' }
+}
+
+// Turns every due OUTBOX message into SENT. Mailbox time = clock + (now() - created_at).
+export async function releaseDue(id?: MailboxId): Promise<number> {
+  const rows = await sql`
+    update mail.message m set labels = '{SENT}'
+    from mail.mailbox b
+    where b.id = m.mailbox_id and 'OUTBOX' = any(m.labels) and not ('TRASH' = any(m.labels))
+      and m.sent_at <= b.clock + (now() - b.created_at)
+      and (${id ?? null}::text is null or m.mailbox_id = ${id ?? null})
+    returning m.id`
+  return rows.length
+}
+
+export async function listOutbox(id: MailboxId): Promise<(Message & { sendsAt: string })[]> {
+  await releaseDue(id)
+  const rows = await sql<Row[]>`
+    select * from mail.message where mailbox_id = ${id} and 'OUTBOX' = any(labels) order by sent_at`
+  return rows.map((r) => ({ ...toMessage(r), sendsAt: new Date(r.sent_at).toISOString() }))
+}
+
+// Elena takes a queued email back into Drafts. Not an HTTP route.
+export async function undoSend(id: MailboxId, messageId: MessageId): Promise<Message> {
+  await releaseDue(id)
+  const { now } = await getMailbox(id)
+  const [row] = await sql<Row[]>`
+    update mail.message set labels = '{DRAFT}', sent_at = ${now}
+    where mailbox_id = ${id} and id = ${messageId} and 'OUTBOX' = any(labels) returning *`
+  if (!row) throw new Invalid('Too late: it has already gone.')
+  return toMessage(row)
 }
 
 // Elena's own "send it" on a held draft, from her screen. Deliberately not an
@@ -271,6 +306,31 @@ export async function checkSend(id: MailboxId, compose: Compose, elenaSaid: stri
     subject: compose.subject ?? (parent ? withReplyPrefix(parent.subject) : '(no subject)'), body: compose.body,
   }
   return (await askGate(id, draftLike, elenaSaid, model)).decision
+}
+
+// Drafts the assistant wrote in this session that aren't held: waiting for
+// Elena to send or discard. (Fixture drafts from before the session are hers.)
+export async function listDrafts(id: MailboxId): Promise<(Message & { contentHash: string })[]> {
+  const rows = await sql<Row[]>`
+    select m.* from mail.message m join mail.mailbox b on b.id = m.mailbox_id
+    where m.mailbox_id = ${id} and 'DRAFT' = any(m.labels) and not ('HELD' = any(m.labels))
+      and not ('TRASH' = any(m.labels)) and m.sent_at >= b.clock
+    order by m.sent_at desc`
+  return rows.map((r) => ({ ...toMessage(r), contentHash: contentHash(r) }))
+}
+
+// Elena sends a draft from her page after reading it: her decision, so no
+// gate, but only the exact content she saw, and only a draft from this session.
+export async function sendAsElena(id: MailboxId, draftId: MessageId, seenHash: string, body?: string): Promise<Message> {
+  let draft = await getDraftRow(id, draftId)
+  if (contentHash(draft) !== seenHash) throw new Invalid(`${draftId} changed since it was shown; reload the page`)
+  if (body !== undefined && body.trim() && body !== draft.body) {
+    const [row] = await sql<Row[]>`update mail.message set body = ${body} where mailbox_id = ${id} and id = ${draftId} returning *`
+    draft = row
+  }
+  // A placeholder the assistant left for her ("[when]") must not go out.
+  if (/\[[a-z ]{2,20}\]/i.test(draft.body)) throw new Invalid('Fill in the part in [brackets] before sending.')
+  return markSent(id, draft)
 }
 
 export type HeldItem = Message & { hold: { reason: string; evidence: string[]; decidedAt: string }; contentHash: string }
@@ -416,8 +476,10 @@ const STOP = new Set(['info', 'hello', 'admin', 'accounts', 'office', 'mail', 't
 
 async function markSent(id: MailboxId, checked: Row): Promise<Message> {
   const { now } = await getMailbox(id)
+  const queued = UNDO_SECONDS > 0
+  const at = queued ? new Date(new Date(now).getTime() + UNDO_SECONDS * 1000).toISOString() : now
   const [row] = await sql<Row[]>`
-    update mail.message set labels = '{SENT}', sent_at = ${now}
+    update mail.message set labels = ${queued ? '{OUTBOX}' : '{SENT}'}, sent_at = ${at}
     where mailbox_id = ${id} and id = ${checked.id} and 'DRAFT' = any(labels)
       and to_addrs = ${sql.json(checked.to_addrs)} and cc = ${sql.json(checked.cc)} and bcc = ${sql.json(checked.bcc)}
       and subject = ${checked.subject} and body = ${checked.body}
@@ -429,7 +491,7 @@ async function markSent(id: MailboxId, checked: Row): Promise<Message> {
 // Idempotent: adding a label a message already has, or removing one it
 // lacks, is not an error. Unknown ids come back in `notFound`.
 export async function modify(id: MailboxId, { ids, add, remove }: Modify): Promise<{ modified: MessageId[]; notFound: MessageId[] }> {
-  const locked = [...add, ...remove].filter((l) => l === 'SENT' || l === 'DRAFT' || l === 'HELD')
+  const locked = [...add, ...remove].filter((l) => l === 'SENT' || l === 'DRAFT' || l === 'HELD' || (l as string) === 'OUTBOX')
   if (locked.length > 0) throw new Invalid(`${locked.join(', ')} can't be added or removed; send a draft instead (HELD is set by the send gate and cleared by Elena)`)
   await getMailbox(id)
   const rows = await sql<{ id: MessageId }[]>`

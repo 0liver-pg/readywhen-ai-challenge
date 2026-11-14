@@ -22,6 +22,8 @@ services:
       # The send gate runs in this service and calls Claude Haiku; without the
       # key it fails closed and holds every email.
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      # Elena's page talks to the assistant.
+      AGENT_URL: http://agent:4111
       # SEND_GATE=off switches the gate off (used only for the eval ablation).
       SEND_GATE: ${SEND_GATE:-on}
     ports: ["3000:3000"]
