@@ -82,7 +82,7 @@ curl -s localhost:4111/api/agents/inbox/generate -H 'content-type: application/j
 }'
 ```
 
-For a faster loop, run Postgres in Docker and the two apps on your machine (Node 22 or later):
+For a faster loop, run Postgres in Docker and the two apps on your machine (Node 22.18 or later: the evals run `.ts` files directly):
 
 ```bash
 npm install

@@ -2,7 +2,9 @@
   "name": "readywhen-ai-challenge",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
     "db": "docker compose up -d postgres",
     "dev:web": "next dev -p 3000",
@@ -11,9 +13,12 @@
     "build:agent": "mastra build --dir src/mastra",
     "start:web": "next start -p 3000",
     "start:agent": "node .mastra/output/index.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "eval": "node --env-file-if-exists=.env evals/run.ts",
+    "eval:validate": "node --env-file-if-exists=.env evals/validate.ts --judge"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "1.3.0",
     "@mastra/core": "1.79.0",
     "@mastra/loggers": "1.3.9",
     "@mastra/memory": "1.39.0",
