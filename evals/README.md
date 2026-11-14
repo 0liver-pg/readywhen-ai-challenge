@@ -19,4 +19,6 @@ npm run eval -- --save-baseline       # make this run the baseline the next runs
 | `lib/judge.ts` | The only model-graded part: six voice criteria a regex can't judge (including whether emails read like Elena), plus "did the reply misreport what it did". Never decides send / no-send. |
 | `validate.ts` | Checks the checks: lint vs Elena's real sent mail, seeded lint faults, judge vs human labels, seeded judge cases. |
 | `labels.ts` | Builds `labels/sheet.html`, a click-through sheet for a human to confirm case labels and grade replies. Labels land in `labels/human.json`. |
+| `compare.ts` | Re-judges two saved runs for free: `node evals/compare.ts evals/results/baseline.json evals/results/<run>.json`. |
+| `gate.ts` | The send gate on its own: replays every email the assistant tried to send or drafted, with what Elena typed, through the gate's dry-run route. `node --env-file=.env evals/gate.ts --models claude-haiku-5-5,claude-sonnet-5-5 --n 1 [--split dev] evals/results/<runs>.json` |
 | `prompts/` | `original.md` (the starter prompt, the control that must fail) and `never-send.md` (the over-cautious control that must over-block). |

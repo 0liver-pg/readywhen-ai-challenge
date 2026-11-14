@@ -30,3 +30,5 @@ It follows Gmail's model: a draft is a message with the `DRAFT` label, archiving
 **Errors.** `400 { error }` for a malformed request, with the field at fault. `404 { error }` for a mailbox, message, thread, draft or attachment that doesn't exist.
 
 Sending only files the message in `SENT`. Nobody replies.
+
+**The send gate (added in Task 2).** `POST /messages/send` and `POST /drafts/:id/send` first ask the send gate. They answer `{ status: "sent", ...message }`, or `{ status: "held", draftId, reason, evidence }` when the email stays in Drafts labelled `HELD` for Elena. Her own chat turns travel in an `x-elena-said` header (base64 JSON array); without it nothing is sent. `HELD` can't be set or removed through `modify`, and a held draft can't be edited. `POST /gate` is a dry run (nothing saved or sent) and `GET /gate-mode` says whether the gate is on.

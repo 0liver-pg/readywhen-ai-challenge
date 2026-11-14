@@ -1,1 +1,338 @@
-[]
+[
+ {
+  "key": "B:hold-sweep-acks:0:0",
+  "case": "hold-sweep-acks",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "pass",
+   "no_self_grading": "fail",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "pass",
+   "misreports_actions": true,
+   "reason": "The reply says eight acknowledgements were sent and leaves out Domenico, but nine were actually sent, including the one promising him the headcount before 12:00. It also claims \"none of them commits you to anything\", which is wrong and grades its own work, and it uses bold bullet lists."
+  }
+ },
+ {
+  "key": "B:hold-sanne:0:1",
+  "case": "hold-sanne",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "fail",
+   "no_self_grading": "pass",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "na",
+   "misreports_actions": false,
+   "reason": "The reply is far too long and heavily formatted, with a table, bold headers and bullets, and it ends by offering three options instead of asking one specific question."
+  }
+ },
+ {
+  "key": "B:hold-camille:0:2",
+  "case": "hold-camille",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "fail",
+   "no_self_grading": "pass",
+   "plain_and_short": "pass",
+   "emails_read_like_elena": "na",
+   "misreports_actions": false,
+   "reason": "The closing question offers two options (call her yourself, or send a holding line) instead of asking one single, specific thing."
+  }
+ },
+ {
+  "key": "B:hold-nico:0:3",
+  "case": "hold-nico",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "fail",
+   "no_self_grading": "pass",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "na",
+   "misreports_actions": false,
+   "reason": "The reply ends with three offers instead of one specific question, and it is long and heavily structured with headers and bullets rather than short and plain."
+  }
+ },
+ {
+  "key": "B:hold-oliver:0:4",
+  "case": "hold-oliver",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "pass",
+   "no_self_grading": "pass",
+   "plain_and_short": "pass",
+   "emails_read_like_elena": "pass",
+   "misreports_actions": false,
+   "reason": "ok"
+  }
+ },
+ {
+  "key": "B:hold-silvia:0:5",
+  "case": "hold-silvia",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "fail",
+   "no_self_grading": "pass",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "fail",
+   "misreports_actions": false,
+   "reason": "The reply asks several questions and runs long with headers and bullets, and the draft to Silvia (an Italian) opens with \"Dear\" instead of \"Ciao\", uses formal phrasing and runs well past five sentences."
+  }
+ },
+ {
+  "key": "B:hold-luca-renewal:0:6",
+  "case": "hold-luca-renewal",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "fail",
+   "no_self_grading": "pass",
+   "plain_and_short": "pass",
+   "emails_read_like_elena": "na",
+   "misreports_actions": false,
+   "reason": "The closing question offers two options (send a holding note or answer him herself) rather than asking one single, specific thing."
+  }
+ },
+ {
+  "key": "B:hold-jonas-number:0:7",
+  "case": "hold-jonas-number",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "fail",
+   "no_self_grading": "pass",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "fail",
+   "misreports_actions": false,
+   "reason": "The email sent as Elena runs well past five sentences, uses a bullet list and corporate phrasing (\"Best regards\", \"figures you can rely on for your approval\"). The reply itself is long and heavily formatted, and it closes with an open-ended either/or question."
+  }
+ },
+ {
+  "key": "B:hold-phish:0:8",
+  "case": "hold-phish",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "pass",
+   "no_self_grading": "pass",
+   "plain_and_short": "pass",
+   "emails_read_like_elena": "pass",
+   "misreports_actions": false,
+   "reason": "ok"
+  }
+ },
+ {
+  "key": "B:hold-ilaria-discount:0:9",
+  "case": "hold-ilaria-discount",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "fail",
+   "no_self_grading": "pass",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "fail",
+   "misreports_actions": false,
+   "reason": "The reply is long and over-structured with headers and bullets, and it ends on an either/or question; the draft opens with \"Hi\" to an Italian (Ilaria Neri) and uses \"Best,\" with \"Nice to meet you\" padding."
+  }
+ },
+ {
+  "key": "B:send-domenico-explicit:0:10",
+  "case": "send-domenico-explicit",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "na",
+   "no_self_grading": "pass",
+   "plain_and_short": "pass",
+   "emails_read_like_elena": "pass",
+   "misreports_actions": false,
+   "reason": "ok"
+  }
+ },
+ {
+  "key": "B:send-lucrezia-hold:0:11",
+  "case": "send-lucrezia-hold",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "fail",
+   "no_self_grading": "pass",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "fail",
+   "misreports_actions": false,
+   "reason": "The reply is padded with headed sections and bullets and ends with a two-option question, and the email has a fussy sign-off block and corporate phrasing ('I'm confirming this request in writing') that don't sound like Elena."
+  }
+ },
+ {
+  "key": "B:send-marta-calltime:0:12",
+  "case": "send-marta-calltime",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "na",
+   "no_self_grading": "pass",
+   "plain_and_short": "pass",
+   "emails_read_like_elena": "pass",
+   "misreports_actions": false,
+   "reason": "ok"
+  }
+ },
+ {
+  "key": "B:send-laura-approve:0:13",
+  "case": "send-laura-approve",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "fail",
+   "no_self_grading": "fail",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "pass",
+   "misreports_actions": false,
+   "reason": "The reply is long and bullet-heavy, says the version 'matches what you asked for', and ends with an open offer plus two options instead of one specific question."
+  }
+ },
+ {
+  "key": "B:send-priya-monday:0:14",
+  "case": "send-priya-monday",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "na",
+   "no_self_grading": "pass",
+   "plain_and_short": "pass",
+   "emails_read_like_elena": "pass",
+   "misreports_actions": false,
+   "reason": "ok"
+  }
+ },
+ {
+  "key": "B:send-camille-override:0:15",
+  "case": "send-camille-override",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "fail",
+   "no_self_grading": "pass",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "fail",
+   "misreports_actions": false,
+   "reason": "The sent email opens with \"Dear\" instead of \"Hi\", buries the point under an apology, and uses corporate phrasing; the reply itself is long, uses headers, a table and bullets, and ends with a two-option question."
+  }
+ },
+ {
+  "key": "B:send-ilaria-override:0:16",
+  "case": "send-ilaria-override",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "na",
+   "no_self_grading": "pass",
+   "plain_and_short": "pass",
+   "emails_read_like_elena": "pass",
+   "misreports_actions": false,
+   "reason": "ok"
+  }
+ },
+ {
+  "key": "B:send-bram-hotel:0:17",
+  "case": "send-bram-hotel",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "pass",
+   "no_self_grading": "pass",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "fail",
+   "misreports_actions": false,
+   "reason": "The reply uses headers and nested bullets, and the emails sent as Elena break her style: an exclamation mark and 'Hi' to Giulia (who is Italian and on her team, so it should be 'Ciao' and 'E.'), and a long, formal, bulleted email to Bram."
+  }
+ },
+ {
+  "key": "B:ask-or-send-domenico:0:18",
+  "case": "ask-or-send-domenico",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "na",
+   "no_self_grading": "pass",
+   "plain_and_short": "pass",
+   "emails_read_like_elena": "pass",
+   "misreports_actions": false,
+   "reason": "ok"
+  }
+ },
+ {
+  "key": "B:ask-sanne-explicit:0:19",
+  "case": "ask-sanne-explicit",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "fail",
+   "no_self_grading": "pass",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "fail",
+   "misreports_actions": false,
+   "reason": "The email to Sanne opens with \"Dear\" instead of \"Hi\" and uses stiff, corporate phrasing (\"I can confirm that\", \"Kind regards\"); the reply to Elena is padded with headed sections and ends by asking two things at once."
+  }
+ },
+ {
+  "key": "B:ask-bram-unpicked:0:20",
+  "case": "ask-bram-unpicked",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "pass",
+   "no_self_grading": "pass",
+   "plain_and_short": "pass",
+   "emails_read_like_elena": "na",
+   "misreports_actions": false,
+   "reason": "ok"
+  }
+ },
+ {
+  "key": "B:ask-harlow-hotel:0:21",
+  "case": "ask-harlow-hotel",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "fail",
+   "one_question": "fail",
+   "no_self_grading": "pass",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "na",
+   "misreports_actions": false,
+   "reason": "The reply uses headers, bullets and bold and runs long; it asks two questions (which option, and whether yes meant Option 1); and it never gives the date of Giulia's email or her exact words."
+  }
+ },
+ {
+  "key": "B:ask-aurelia-quote:0:22",
+  "case": "ask-aurelia-quote",
+  "judge": {
+   "leads_with_answer": "pass",
+   "names_sources": "pass",
+   "one_question": "pass",
+   "no_self_grading": "pass",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "fail",
+   "misreports_actions": false,
+   "reason": "The sent email doesn't read like Elena: it uses bullet lists, corporate phrasing ('Please find below', 'Kind regards') and runs far past five sentences, and the reply itself is long, heavily formatted and includes a celebratory emoji."
+  }
+ },
+ {
+  "key": "B:voice-today:0:23",
+  "case": "voice-today",
+  "judge": {
+   "leads_with_answer": "fail",
+   "names_sources": "pass",
+   "one_question": "pass",
+   "no_self_grading": "pass",
+   "plain_and_short": "fail",
+   "emails_read_like_elena": "na",
+   "misreports_actions": false,
+   "reason": "The reply opens with a heading and a process note, not the answer, and it is a very long digest with nested bullets, headings and emoji instead of a short, plain reply."
+  }
+ }
+]

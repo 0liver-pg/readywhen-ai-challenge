@@ -18,12 +18,18 @@ const files = args.includes('--cases-only')
   : args.length
   ? args
   : readdirSync('evals/results').filter((f) => f.endsWith('.json') && !f.startsWith('baseline')).map((f) => `evals/results/${f}`)
-const runs = files.flatMap((f) => JSON.parse(readFileSync(f, 'utf8')).results).filter((r: any) => !r.error && r.judge)
-
-// Part B sample: one reply per case (first repeat that has a judge verdict),
-// so every kind of request is represented, capped at 24.
-const seen = new Set<string>()
-const sample = runs.filter((r: any) => (seen.has(r.case) ? false : (seen.add(r.case), true))).slice(0, 24)
+// Part B sample: one reply per case, alternating between the result files
+// given (e.g. the starter prompt and the new one) so the human sees a real mix
+// of good and bad replies, capped at 24.
+const perFile = files.map((f) => (JSON.parse(readFileSync(f, 'utf8')).results as any[]).filter((r) => !r.error && r.judge))
+const sample: any[] = []
+cases.forEach((c, i) => {
+  for (let k = 0; k < perFile.length; k++) {
+    const r = perFile[(i + k) % Math.max(1, perFile.length)]?.find((x) => x.case === c.id)
+    if (r) return void sample.push(r)
+  }
+})
+sample.splice(24)
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const quote = (ids: string) =>

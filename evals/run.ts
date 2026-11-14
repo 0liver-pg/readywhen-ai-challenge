@@ -54,6 +54,16 @@ const N = Number(opt.n)
 const sha = (s: string) => createHash('sha256').update(s).digest('hex').slice(0, 8)
 const promptText = readFileSync(opt.variant === 'live' ? 'src/mastra/agents/inbox.md' : `evals/prompts/${opt.variant}.md`, 'utf8')
 // What the scores mean: if any of these change, old results are not comparable.
+// The send gate is part of the system under test, not of the scoring, so its
+// mode is recorded but not hashed: gate on/off runs stay comparable.
+const gateInfo = await fetch(`${process.env.MAIL_API_URL ?? 'http://localhost:3000'}/api/mailboxes/main/gate-mode`).then((r) => r.json()).catch(() => ({ mode: 'unknown' }))
+const gateMode: string = gateInfo.mode
+// A gate without a key fails closed and holds everything: the run would only
+// measure the missing key, so refuse instead of reporting nonsense.
+if (gateMode === 'on' && gateInfo.keyPresent === false) {
+  console.error('The mail API has the send gate on but no ANTHROPIC_API_KEY, so every send would be held. Give the web service the key (see docker-compose.yml) or set SEND_GATE=off.')
+  process.exit(2)
+}
 const harness = sha(['evals/cases.json', 'evals/lib/lint.ts', 'evals/lib/judge.ts'].map((f) => readFileSync(f, 'utf8')).join('\n'))
 
 const recipients = (m: Message) => [...m.to, ...m.cc, ...m.bcc].map((a) => a.email.toLowerCase())
@@ -62,6 +72,7 @@ const hits = (ms: Message[], f: Match) => ms.filter((m) => recipients(m).some((e
 const brief = (m: Message) => `to ${recipients(m).join(',')}: ${m.body.slice(0, 160).replace(/\s+/g, ' ')}`
 const full = (m: Message) => `To: ${recipients(m).join(', ')}\nSubject: ${m.subject}\n\n${m.body}`
 
+type Shaped = { to: string[]; cc?: string[]; bcc?: string[]; primaryTo?: string[]; subject: string; body: string; inReplyTo?: string | null }
 type RunResult = {
   case: string
   kind: Case['kind']
@@ -69,8 +80,8 @@ type RunResult = {
   rep: number
   pass: boolean
   failures: string[]
-  sent: { to: string[]; subject: string; body: string }[]
-  drafts: { to: string[]; subject: string; body: string }[]
+  sent: Shaped[]
+  drafts: Shaped[]
   replies: string[]
   tools: string[]
   chatLint: string[]
@@ -81,6 +92,7 @@ type RunResult = {
   ms: number
   error?: string
 }
+
 
 async function runOne(c: Case, rep: number): Promise<RunResult> {
   const t0 = Date.now()
@@ -96,7 +108,8 @@ async function runOne(c: Case, rep: number): Promise<RunResult> {
   const turns: Turn[] = []
   const newSentAfter = async () => Promise.all([...(await idsWithLabel(mb, 'SENT'))].filter((id) => !sent0.has(id)).map((id) => getMessage(mb, id)))
   for (const [i, t] of c.turns.entries()) {
-    turns.push(await chat(mb, thread, t, { promptVariant: opt.variant }))
+    // Elena's own words so far, as her UI would pass them: the send gate reads these.
+    turns.push(await chat(mb, thread, t, { promptVariant: opt.variant, elenaSaid: c.turns.slice(0, i + 1) }))
     const early = (c.forbidAfterTurn ?? []).filter((f) => f.turn === i + 1)
     if (early.length && i < c.turns.length - 1) {
       const sentSoFar = await newSentAfter()
@@ -153,7 +166,7 @@ async function runOne(c: Case, rep: number): Promise<RunResult> {
       judgeError = (e as Error).message
     }
   }
-  const shape = (m: Message) => ({ to: recipients(m), subject: m.subject, body: m.body })
+  const shape = (m: Message) => ({ to: recipients(m), cc: m.cc.map((a) => a.email), bcc: m.bcc.map((a) => a.email), primaryTo: m.to.map((a) => a.email), subject: m.subject, body: m.body, inReplyTo: m.inReplyTo })
   return {
     case: c.id, kind: c.kind, split: c.split, rep,
     pass: failures.length === 0,
@@ -192,7 +205,7 @@ function wilson(k: number, n: number) {
 
 const started = Date.now()
 const jobs = cases.flatMap((c) => Array.from({ length: N }, (_, rep) => ({ c, rep })))
-console.log(`Running ${cases.length} cases x ${N} = ${jobs.length} runs, prompt "${opt.variant}" (${sha(promptText)}), harness ${harness}, concurrency ${opt.concurrency}`)
+console.log(`Running ${cases.length} cases x ${N} = ${jobs.length} runs, prompt "${opt.variant}" (${sha(promptText)}), send gate ${gateMode}, harness ${harness}, concurrency ${opt.concurrency}`)
 let done = 0
 const results = await pool(jobs, Number(opt.concurrency), async ({ c, rep }) => {
   let r: RunResult
@@ -243,7 +256,7 @@ const errors = results.filter((r) => r.error)
 const judgeErrors = results.filter((r) => r.judgeError)
 const tally = (xs: string[]) => Object.entries(xs.reduce((a: Record<string, number>, x) => ((a[x] = (a[x] ?? 0) + 1), a), {})).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', ')
 const allM = metrics(results)
-console.log(`\nRESULTS  prompt "${opt.variant}" ${sha(promptText)}, harness ${harness}, n=${N}, ${results.length} runs, ${errors.length} errors, ${judgeErrors.length} judge errors`)
+console.log(`\nRESULTS  prompt "${opt.variant}" ${sha(promptText)}, gate ${gateMode}, harness ${harness}, n=${N}, ${results.length} runs, ${errors.length} errors, ${judgeErrors.length} judge errors`)
 console.log('  ALL CASES\n' + show(allM))
 if (opt.split === 'all') console.log('  TEST SPLIT ONLY (never tuned on)\n' + show(metrics(results.filter((r) => r.split === 'test'))))
 console.log(`  chat lint failures:  ${tally(results.flatMap((r) => r.chatLint)) || 'none'}`)
@@ -281,7 +294,7 @@ if (opt.compare !== 'none' && existsSync(opt.compare)) {
 mkdirSync('evals/results', { recursive: true })
 const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
 const out = `evals/results/${stamp}-${opt.label ?? opt.variant}.json`
-writeFileSync(out, JSON.stringify({ meta: { variant: opt.variant, promptHash: sha(promptText), harness, n: N, split: opt.split, judge: !opt['no-judge'], usd, wallSeconds: wall, at: new Date().toISOString() }, metrics: allM, perCase, results }, null, 1))
+writeFileSync(out, JSON.stringify({ meta: { variant: opt.variant, promptHash: sha(promptText), gate: gateMode, harness, n: N, split: opt.split, judge: !opt['no-judge'], usd, wallSeconds: wall, at: new Date().toISOString() }, metrics: allM, perCase, results }, null, 1))
 console.log(`\nsaved ${out}`)
 if (opt['save-baseline']) {
   copyFileSync(out, 'evals/results/baseline.json')

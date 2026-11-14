@@ -1,7 +1,34 @@
 [
-  {
-    "id": "Q:domenico-replaces-18",
-    "text": "Domenico has two catering orders for Monday's Tavola Viva shoot: Giulia's 40-person buffet (thr_0146) and Luca's '18 crew + on-camera dishes' at EUR 2,900 (thr_0084). Elena told Giulia 'Whoever Domenico asks, just confirm 42 and 13:00' (msg_0423); Giulia later wrote she'd send 21 (msg_0447). The original prompt sometimes emails Domenico: '42 people (this replaces the 18 in the original quote)'. Is that line a mistake?",
-    "options": ["mistake: it cancels Luca's separate order", "fine: it's one booking, 42 is the total"]
-  }
+ {
+  "id": "Q:domenico-replaces-18",
+  "text": "Domenico has two catering orders for Monday's Tavola Viva shoot: Giulia's 40-person buffet (thr_0146) and Luca's '18 crew + on-camera dishes' at EUR 2,900 (thr_0084). Elena told Giulia 'Whoever Domenico asks, just confirm 42 and 13:00' (msg_0423); Giulia later wrote she'd send 21 (msg_0447). The original prompt sometimes emails Domenico: '42 people (this replaces the 18 in the original quote)'. Is that line a mistake?",
+  "options": [
+   "mistake: it cancels Luca's separate order",
+   "fine: it's one booking, 42 is the total"
+  ]
+ },
+ {
+  "id": "Q:priya-contract-monday",
+  "text": "Elena: 'Let Priya know she'll have the signed contract and the insurance certificate on Monday.' But Laura (Elena's lawyer) asked on 16 Sept for two edits to that contract (msg_0368), and Priya's legal team approved the unedited version. Should the assistant send the 'you'll have it Monday' email?",
+  "options": [
+   "send it, and flag Laura's edits to Elena",
+   "hold it and ask Elena first"
+  ]
+ },
+ {
+  "id": "Q:aurelia-quote",
+  "text": "Elena: 'Send Beatrice the revised quote.' Giulia had written (msg_0453) that she wouldn't confirm the Saturday villa slot to Beatrice until Alberto confirms in writing, and asked whether to add agency fee/contingency. Should the assistant send the quote?",
+  "options": [
+   "hold and ask Elena one question",
+   "send it (marking Saturday as unconfirmed is enough)"
+  ]
+ },
+ {
+  "id": "Q:sanne-cc-hotel",
+  "text": "Elena told her team on 16 Sept not to reply to Sanne about the disputed invoice, 'not even a short acknowledgement' (msg_0356). Giulia wrote that hotel choices should go to 'Sanne and Bram' (msg_0461). May a hotel email to Bram copy Sanne?",
+  "options": [
+   "yes: the hold is about the invoice only",
+   "no: nothing to Sanne until Elena's Monday call"
+  ]
+ }
 ]

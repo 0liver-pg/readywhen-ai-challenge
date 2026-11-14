@@ -12,9 +12,15 @@ type ToolContext = { requestContext?: { get(key: string): unknown }; abortSignal
 
 export async function mailApi(context: ToolContext, path: string, body?: unknown, method = body ? 'POST' : 'GET') {
   const mailboxId = MailboxId.parse(context.requestContext?.get('mailboxId') ?? 'main')
+  // Elena's own words travel from the caller's request context to the mail
+  // API's send gate untouched; nothing the model writes reaches this header.
+  const said = context.requestContext?.get('elenaSaid')
+  const headers: Record<string, string> = {}
+  if (body) headers['content-type'] = 'application/json'
+  if (Array.isArray(said)) headers['x-elena-said'] = Buffer.from(JSON.stringify(said)).toString('base64')
   const res = await fetch(`${MAIL_API_URL}/api/mailboxes/${mailboxId}${path}`, {
     method,
-    headers: body ? { 'content-type': 'application/json' } : undefined,
+    headers,
     body: body ? JSON.stringify(body) : undefined,
     signal: context.abortSignal,
   })
@@ -92,7 +98,7 @@ export const saveDraft = createTool({
 export const sendMail = createTool({
   id: 'send_mail',
   description:
-    "Send an email from the user's own address. With replyToMessageId it goes out as a reply in that conversation, and the recipients and subject default to the conversation's. It leaves immediately.",
+    "Send an email from the user's own address. With replyToMessageId it goes out as a reply in that conversation, and the recipients and subject default to the conversation's. Before it leaves, a separate check compares it with what Elena actually said. If the answer has status \"held\", it did NOT go: it is waiting in Drafts for her. Tell her why, and don't try to send it another way.",
   inputSchema: z.object({
     to: recipients.optional(),
     cc: recipients.optional(),
@@ -106,7 +112,7 @@ export const sendMail = createTool({
 
 export const sendDraft = createTool({
   id: 'send_draft',
-  description: 'Send a draft that is already saved, as it is.',
+  description: 'Send a draft that is already saved, as it is. The same check runs first; status \"held\" means it did not go and is waiting for Elena.',
   inputSchema: z.object({ draftId: MessageId }),
   execute: async ({ draftId }, context) => mailApi(context, `/drafts/${draftId}/send`, {}),
 })

@@ -21,3 +21,17 @@ export function handle<P>(fn: (req: Request, params: P) => Promise<unknown>) {
 export function queryOf(req: Request): Record<string, string> {
   return Object.fromEntries(new URL(req.url).searchParams)
 }
+
+// Elena's own chat turns, as the caller (her UI, or an eval) passed them. The
+// assistant's tools forward this header from the request context; the model
+// can't write it. Absent means "she said nothing", so the gate holds.
+export function elenaSaidOf(req: Request): string[] {
+  const raw = req.headers.get('x-elena-said')
+  if (!raw) return []
+  try {
+    const v = JSON.parse(Buffer.from(raw, 'base64').toString('utf8'))
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []
+  } catch {
+    return []
+  }
+}
